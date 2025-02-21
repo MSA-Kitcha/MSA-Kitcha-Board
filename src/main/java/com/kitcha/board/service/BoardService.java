@@ -1,0 +1,119 @@
+package com.kitcha.board.service;
+
+import com.kitcha.board.dto.BoardCreate;
+import com.kitcha.board.dto.BoardResponse;
+import com.kitcha.board.dto.BoardUpdate;
+import com.kitcha.board.entity.Board;
+import com.kitcha.board.repository.BoardRepository;
+import com.kitcha.board.repository.FileRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class BoardService {
+    @Autowired
+    private BoardRepository boardRepository;
+    @Autowired
+    private FileService fileService;
+
+    // 1. 게시글 작성
+    public Board create(BoardCreate boardCreate) throws IOException {
+        // boardId가 들어오는 경우 -> 잘못된 요청
+        if (boardCreate.getBoardId() != null) {
+            return null;
+        }
+
+        // TODO userId 받아오기
+        Long userId = 1L;
+
+        Board board = boardCreate.toEntity(userId);
+
+        fileService.createPdf(board);
+
+        return boardRepository.save(board);
+    }
+
+
+    // 2. 목록 조회
+    public List<BoardResponse> list(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Board> boardPage = boardRepository.findByDeletedYnFalse(pageable);
+
+        // TODO writer 받아오기
+        String writer = "writer";
+
+        return boardPage.getContent().stream()
+                .map(board -> board.toResponse(writer)) // 엔티티를 DTO로 변환
+                .collect(Collectors.toList());
+    }
+
+    // 3. 상세 조회
+    public BoardResponse detail(Long boardId) {
+        Optional<Board> optional = boardRepository.findById(boardId);
+
+        // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
+        if (optional.isEmpty()) {
+            return null;
+        }
+
+        Board board = optional.get();
+        
+        // 삭제된 게시글인 경우 -> 잘못된 요청
+        if (board.isDeletedYn()) {
+            return null;
+        }
+        
+        board.updateHitCnt();
+        boardRepository.save(board);
+
+        // TODO writer 받아오기
+        String writer = "writer";
+
+        return board.toResponse(writer);
+    }
+
+    // 4. 수정
+    public void update(Long boardId, BoardUpdate boardUpdate) {
+        Optional<Board> optional = boardRepository.findById(boardId);
+
+        // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
+        if (optional.isEmpty()) {
+            return;
+        }
+
+        Board board = optional.get();
+
+        // 삭제된 게시글인 경우 -> 잘못된 요청
+        if (board.isDeletedYn()) {
+            return;
+        }
+
+        board.update(boardUpdate.getBoardTitle(), boardUpdate.getContent());
+        boardRepository.save(board);
+    }
+
+    // 5. 삭제
+    public void delete(Long boardId) {
+        Optional<Board> optional = boardRepository.findById(boardId);
+
+        // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
+        if (optional.isEmpty()) {
+            return;
+        }
+
+        Board board = optional.get();
+
+        board.setDeletedYn(true);
+        boardRepository.save(board);
+    }
+}
