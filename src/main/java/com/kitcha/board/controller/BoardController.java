@@ -32,11 +32,11 @@ public class BoardController {
     // 1. 게시글 작성
     @PostMapping
     public ResponseEntity<Object> create(
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Id") String userId,
             @RequestHeader("X-User-Nickname") String nickname,
             @RequestBody BoardCreate boardCreate) throws IOException {
 
-        Board newBoard = boardService.create(userId, nickname, boardCreate);
+        Board newBoard = boardService.create(Long.parseLong(userId), nickname, boardCreate);
 
         return (newBoard != null) ?
                 ResponseEntity.ok().body(newBoard) :
@@ -54,11 +54,11 @@ public class BoardController {
     // 3. 상세 조회
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDetail> detail(
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Id") String userId,
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long boardId) {
 
-        BoardDetail boardDetail = boardService.detail(userId, role, boardId);
+        BoardDetail boardDetail = boardService.detail(Long.parseLong(userId), role, boardId);
 
         return (boardDetail != null) ?
                 ResponseEntity.ok().body(boardDetail) :
@@ -69,20 +69,20 @@ public class BoardController {
     @PutMapping("/{boardId}")
     public void update(
             @PathVariable Long boardId,
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Id") String userId,
             @RequestBody BoardUpdate boardUpdate) {
 
-        boardService.update(boardId, userId, boardUpdate);
+        boardService.update(boardId, Long.parseLong(userId), boardUpdate);
     }
 
     // 5. 삭제
     @DeleteMapping("/{boardId}")
     public void delete(
             @PathVariable Long boardId,
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Id") String userId,
             @RequestHeader("X-User-Role") String role) {
 
-        boardService.delete(boardId, userId, role);
+        boardService.delete(boardId, Long.parseLong(userId), role);
     }
 
     // 6. 첨부파일 다운로드
