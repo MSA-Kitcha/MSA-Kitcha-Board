@@ -52,7 +52,7 @@ public class BoardService {
     }
 
     // 3. 상세 조회
-    public BoardDetail detail(Long userId, Long boardId) {
+    public BoardDetail detail(Long userId, String role, Long boardId) {
         Optional<Board> optional = boardRepository.findById(boardId);
 
         // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
@@ -72,8 +72,10 @@ public class BoardService {
 
         // 작성자 본인인가?
         boolean isOwner = board.getUserId().equals(userId);
+        // 관리자인가?
+        boolean isAdmin = role != null && role.equals("ADMIN");
 
-        return board.toDetail(isOwner);
+        return board.toDetail(isOwner, isAdmin);
     }
 
     // 4. 수정
@@ -102,7 +104,7 @@ public class BoardService {
     }
 
     // 5. 삭제
-    public void delete(Long boardId, Long userId) {
+    public void delete(Long boardId, Long userId, String role) {
         Optional<Board> optional = boardRepository.findById(boardId);
 
         // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
@@ -112,12 +114,10 @@ public class BoardService {
 
         Board board = optional.get();
 
-        // 작성자 본인이 아닌 경우 -> 권한 없음
-        if (!board.getUserId().equals(userId)) {
-            return;
+        // 작성자 본인인 경우 || 관리자인 경우 -> 삭제 가능
+        if (board.getUserId().equals(userId) || role.equals("ADMIN")) {
+            board.setDeletedYn(true);
+            boardRepository.save(board);
         }
-
-        board.setDeletedYn(true);
-        boardRepository.save(board);
     }
 }

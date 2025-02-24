@@ -55,9 +55,10 @@ public class BoardController {
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDetail> detail(
             @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role,
             @PathVariable Long boardId) {
 
-        BoardDetail boardDetail = boardService.detail(userId, boardId);
+        BoardDetail boardDetail = boardService.detail(userId, role, boardId);
 
         return (boardDetail != null) ?
                 ResponseEntity.ok().body(boardDetail) :
@@ -78,9 +79,10 @@ public class BoardController {
     @DeleteMapping("/{boardId}")
     public void delete(
             @PathVariable Long boardId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
 
-        boardService.delete(boardId, userId);
+        boardService.delete(boardId, userId, role);
     }
 
     // 6. 첨부파일 다운로드

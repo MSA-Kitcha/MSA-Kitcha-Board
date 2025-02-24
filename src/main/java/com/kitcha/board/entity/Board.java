@@ -68,8 +68,8 @@ public class Board {
         hitCnt++;
     }
 
-    public BoardDetail toDetail(boolean isOwner) {
-        return new BoardDetail(boardId, boardTitle, hitCnt, nickname, createdAt.toString(), content, longSummary, newsUrl, isOwner);
+    public BoardDetail toDetail(boolean isOwner, boolean isAdmin) {
+        return new BoardDetail(boardId, boardTitle, hitCnt, nickname, createdAt.toString(), content, longSummary, newsUrl, isOwner, isAdmin);
     }
 
     public BoardList toList() {

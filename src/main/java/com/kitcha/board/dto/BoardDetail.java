@@ -16,4 +16,5 @@ public class BoardDetail {
     private String newsUrl;
 
     private boolean isOwner = false; // 작성자 본인인지?
+    private boolean isAdmin = false; // 관리자인지?
 }
