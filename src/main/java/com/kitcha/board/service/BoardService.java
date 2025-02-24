@@ -1,11 +1,11 @@
 package com.kitcha.board.service;
 
 import com.kitcha.board.dto.BoardCreate;
-import com.kitcha.board.dto.BoardResponse;
+import com.kitcha.board.dto.BoardDetail;
+import com.kitcha.board.dto.BoardList;
 import com.kitcha.board.dto.BoardUpdate;
 import com.kitcha.board.entity.Board;
 import com.kitcha.board.repository.BoardRepository;
-import com.kitcha.board.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,16 +26,13 @@ public class BoardService {
     private FileService fileService;
 
     // 1. 게시글 작성
-    public Board create(BoardCreate boardCreate) throws IOException {
+    public Board create(Long userId, String nickname, BoardCreate boardCreate) throws IOException {
         // boardId가 들어오는 경우 -> 잘못된 요청
         if (boardCreate.getBoardId() != null) {
             return null;
         }
 
-        // TODO userId 받아오기
-        Long userId = 1L;
-
-        Board board = boardCreate.toEntity(userId);
+        Board board = boardCreate.toEntity(userId, nickname);
 
         fileService.createPdf(board);
 
@@ -44,21 +41,18 @@ public class BoardService {
 
 
     // 2. 목록 조회
-    public List<BoardResponse> list(int page, int size) {
+    public List<BoardList> list(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Board> boardPage = boardRepository.findByDeletedYnFalse(pageable);
 
-        // TODO writer 받아오기
-        String writer = "writer";
-
         return boardPage.getContent().stream()
-                .map(board -> board.toResponse(writer)) // 엔티티를 DTO로 변환
+                .map(Board ->Board.toList()) // 엔티티를 DTO로 변환 //
                 .collect(Collectors.toList());
     }
 
     // 3. 상세 조회
-    public BoardResponse detail(Long boardId) {
+    public BoardDetail detail(Long userId, Long boardId) {
         Optional<Board> optional = boardRepository.findById(boardId);
 
         // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
@@ -76,14 +70,14 @@ public class BoardService {
         board.updateHitCnt();
         boardRepository.save(board);
 
-        // TODO writer 받아오기
-        String writer = "writer";
+        // 작성자 본인인가?
+        boolean isOwner = board.getUserId().equals(userId);
 
-        return board.toResponse(writer);
+        return board.toDetail(isOwner);
     }
 
     // 4. 수정
-    public void update(Long boardId, BoardUpdate boardUpdate) {
+    public void update(Long boardId, Long userId, BoardUpdate boardUpdate) {
         Optional<Board> optional = boardRepository.findById(boardId);
 
         // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
@@ -98,12 +92,17 @@ public class BoardService {
             return;
         }
 
+        // 작성자 본인이 아닌 경우 -> 권한 없음
+        if (!board.getUserId().equals(userId)) {
+            return;
+        }
+
         board.update(boardUpdate.getBoardTitle(), boardUpdate.getContent());
         boardRepository.save(board);
     }
 
     // 5. 삭제
-    public void delete(Long boardId) {
+    public void delete(Long boardId, Long userId) {
         Optional<Board> optional = boardRepository.findById(boardId);
 
         // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
@@ -112,6 +111,11 @@ public class BoardService {
         }
 
         Board board = optional.get();
+
+        // 작성자 본인이 아닌 경우 -> 권한 없음
+        if (!board.getUserId().equals(userId)) {
+            return;
+        }
 
         board.setDeletedYn(true);
         boardRepository.save(board);

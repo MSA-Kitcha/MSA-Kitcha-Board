@@ -1,11 +1,11 @@
 package com.kitcha.board.entity;
 
-import com.kitcha.board.dto.BoardResponse;
+import com.kitcha.board.dto.BoardDetail;
+import com.kitcha.board.dto.BoardList;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +17,9 @@ public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
+
+    @Column
+    private String nickname;
 
     @Column(nullable = false)
     private String boardTitle;
@@ -46,12 +49,13 @@ public class Board {
     @Column
     private Long userId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "file_id") // file 테이블의 file_id를 FK로 참조
-    private File file;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "file_id") // file 테이블의 file_id를 FK로 참조
+//    private File file;
 
-    public Board(Long boardId, String boardTitle, String content, String newsTitle, String longSummary, String newsUrl, Long userId) {
+    public Board(Long boardId, String nickname, String boardTitle, String content, String newsTitle, String longSummary, String newsUrl, Long userId) {
         this.boardId = boardId;
+        this.nickname = nickname;
         this.boardTitle = boardTitle;
         this.content = content;
         this.newsTitle = newsTitle;
@@ -64,8 +68,12 @@ public class Board {
         hitCnt++;
     }
 
-    public BoardResponse toResponse(String writer) {
-        return new BoardResponse(boardTitle, hitCnt, writer, createdAt.toString(), content, longSummary, newsUrl);
+    public BoardDetail toDetail(boolean isOwner) {
+        return new BoardDetail(boardId, boardTitle, hitCnt, nickname, createdAt.toString(), content, longSummary, newsUrl, isOwner);
+    }
+
+    public BoardList toList() {
+        return new BoardList(boardId, boardTitle, hitCnt, nickname, createdAt.toString());
     }
 
     public void update(String boardTitle, String content) {

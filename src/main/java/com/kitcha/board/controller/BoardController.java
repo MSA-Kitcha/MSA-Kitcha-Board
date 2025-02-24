@@ -1,7 +1,8 @@
 package com.kitcha.board.controller;
 
 import com.kitcha.board.dto.BoardCreate;
-import com.kitcha.board.dto.BoardResponse;
+import com.kitcha.board.dto.BoardDetail;
+import com.kitcha.board.dto.BoardList;
 import com.kitcha.board.dto.BoardUpdate;
 import com.kitcha.board.entity.Board;
 import com.kitcha.board.entity.File;
@@ -17,7 +18,6 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +31,12 @@ public class BoardController {
 
     // 1. 게시글 작성
     @PostMapping
-    public ResponseEntity<Object> create(@RequestBody BoardCreate boardCreate) throws IOException {
-        Board newBoard = boardService.create(boardCreate);
+    public ResponseEntity<Object> create(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Nickname") String nickname,
+            @RequestBody BoardCreate boardCreate) throws IOException {
+
+        Board newBoard = boardService.create(userId, nickname, boardCreate);
 
         return (newBoard != null) ?
                 ResponseEntity.ok().body(newBoard) :
@@ -41,32 +45,42 @@ public class BoardController {
 
     // 2. 목록 조회
     @GetMapping
-    public ResponseEntity<List<BoardResponse>> list(@RequestParam int page, @RequestParam int size) {
-        List<BoardResponse> results = boardService.list(page, size);
+    public ResponseEntity<List<BoardList>> list(@RequestParam int page, @RequestParam int size) {
+        List<BoardList> results = boardService.list(page, size);
 
         return ResponseEntity.ok().body(results);
     }
 
     // 3. 상세 조회
     @GetMapping("/{boardId}")
-    public ResponseEntity<BoardResponse> detail(@PathVariable Long boardId) {
-        BoardResponse boardResponse = boardService.detail(boardId);
+    public ResponseEntity<BoardDetail> detail(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long boardId) {
 
-        return (boardResponse != null) ?
-                ResponseEntity.ok().body(boardResponse) :
+        BoardDetail boardDetail = boardService.detail(userId, boardId);
+
+        return (boardDetail != null) ?
+                ResponseEntity.ok().body(boardDetail) :
                 ResponseEntity.badRequest().build();
     }
 
     // 4. 수정
     @PutMapping("/{boardId}")
-    public void update(@PathVariable Long boardId, @RequestBody BoardUpdate boardUpdate) {
-        boardService.update(boardId, boardUpdate);
+    public void update(
+            @PathVariable Long boardId,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody BoardUpdate boardUpdate) {
+
+        boardService.update(boardId, userId, boardUpdate);
     }
 
     // 5. 삭제
     @DeleteMapping("/{boardId}")
-    public void delete(@PathVariable Long boardId) {
-        boardService.delete(boardId);
+    public void delete(
+            @PathVariable Long boardId,
+            @RequestHeader("X-User-Id") Long userId) {
+
+        boardService.delete(boardId, userId);
     }
 
     // 6. 첨부파일 다운로드

@@ -5,14 +5,15 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class BoardResponse {
+public class BoardDetail {
+    private Long boardId;
     private String boardTitle;
     private int hitCnt;
-    private String writer; // userId를 키로 받아낸 nickname
+    private String writer;
     private String boardDate;
     private String content;
     private String longSummary;
     private String newsUrl;
 
-    // TODO 파일 다운로드
+    private boolean isOwner = false; // 작성자 본인인지?
 }

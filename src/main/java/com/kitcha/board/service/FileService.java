@@ -21,6 +21,8 @@ import java.util.Optional;
 @Slf4j
 public class FileService {
     @Autowired
+    private BoardRepository boardRepository;
+    @Autowired
     private FileRepository fileRepository;
 
     @Async("taskExecutor")
@@ -99,10 +101,19 @@ public class FileService {
 
     // 6. 파일 다운로드
     public Optional<File> download(Long boardId) {
+        Optional<Board> board = boardRepository.findById(boardId);
         Optional<File> file = fileRepository.findById(boardId);
 
-        return (file.isEmpty()) ?
-                null :
-                file;
+        // boardId에 해당하는 데이터가 없는 경우 -> 잘못된 요청
+        if (board.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // 삭제된 게시글인 경우 -> 잘못된 요청
+        if (board.get().isDeletedYn()) {
+            return Optional.empty();
+        }
+
+        return file; // 파일이 있으면 파일 반환, 없으면 Optional.empty() 반환
     }
 }
