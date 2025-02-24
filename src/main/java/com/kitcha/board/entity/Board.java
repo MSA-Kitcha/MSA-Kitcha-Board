@@ -1,5 +1,7 @@
 package com.kitcha.board.entity;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.kitcha.board.dto.BoardDetail;
 import com.kitcha.board.dto.BoardList;
 import jakarta.persistence.*;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Entity
 @Table(name = "board")
 @Data
