@@ -42,7 +42,7 @@ public class BoardService {
 
     // 2. 목록 조회
     public List<BoardList> list(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "boardId"));
 
         Page<Board> boardPage = boardRepository.findByDeletedYnFalse(pageable);
 
