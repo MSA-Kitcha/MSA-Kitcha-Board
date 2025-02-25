@@ -15,7 +15,9 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 @Slf4j
@@ -82,7 +84,19 @@ public class FileService {
             contentStream.close();
 
             // PDF 파일 저장
-            String folderPath = "c:\\Temp\\kitcha\\";
+            String folderPath = System.getProperty("os.name").toLowerCase().contains("win")
+                    ? "c:\\Temp\\kitcha\\"
+                    : "/tmp/kitcha/";
+
+            try {
+                Path path = Paths.get(folderPath);
+                if (!Files.exists(path)) {
+                    Files.createDirectories(path);
+                }
+            } catch (IOException e) {
+                log.error("폴더 생성 실패: " + e.getMessage());
+            }
+
             String fileName = board.getNewsTitle().replaceAll("\\s+", "_") + ".pdf";
             String fullPath = folderPath + fileName;
             document.save(fullPath);
