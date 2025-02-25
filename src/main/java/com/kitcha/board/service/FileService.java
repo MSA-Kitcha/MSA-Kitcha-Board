@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +19,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -73,11 +76,21 @@ public class FileService {
             contentStream.beginText();
             contentStream.setFont(contentCont, 12);
             contentStream.newLineAtOffset(50, pageHeight - 250); // x, y 좌표 (페이지에서 위치)
-            for (String line : lines) {
-                contentStream.showText(line);  // 한 줄 출력
-                yPosition -= 15;               // Y 좌표 변경 (한 줄 아래로 이동)
-                contentStream.newLineAtOffset(0, -15);
+
+//            for (String line : lines) {
+//                contentStream.showText(line);  // 한 줄 출력
+//                yPosition -= 15;               // Y 좌표 변경 (한 줄 아래로 이동)
+//                contentStream.newLineAtOffset(0, -15);
+//            }
+
+            float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
+            List<String> wrappedLines = wrapText(board.getLongSummary(), contentCont, 12, maxWidth);
+
+            for (String line : wrappedLines) {
+                contentStream.showText(line);
+                contentStream.newLineAtOffset(0, -20);
             }
+
             contentStream.endText();
 
             // 콘텐츠 스트림 닫기
@@ -130,4 +143,35 @@ public class FileService {
 
         return file; // 파일이 있으면 파일 반환, 없으면 Optional.empty() 반환
     }
+
+    // 줄바꿈 계산 함수
+    public List<String> wrapText(String text, PDFont font, int fontSize, float maxWidth) throws IOException {
+        List<String> lines = new ArrayList<>();
+        StringBuilder currentLine = new StringBuilder();
+        float currentWidth = 0;
+
+        for (String word : text.split(" ")) {  // 단어 단위로 분리
+            float wordWidth = font.getStringWidth(word) / 1000 * fontSize;  // 단어 폭 계산
+
+            if (currentWidth + wordWidth > maxWidth) {  // 줄 길이 초과 시 줄바꿈
+                lines.add(currentLine.toString());
+                currentLine = new StringBuilder(word);
+                currentWidth = wordWidth;
+            } else {
+                if (currentLine.length() > 0) {
+                    currentLine.append(" ");
+                    currentWidth += font.getStringWidth(" ") / 1000 * fontSize;
+                }
+                currentLine.append(word);
+                currentWidth += wordWidth;
+            }
+        }
+
+        if (currentLine.length() > 0) {
+            lines.add(currentLine.toString());
+        }
+
+        return lines;
+    }
+
 }
