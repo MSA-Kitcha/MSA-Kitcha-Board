@@ -69,7 +69,6 @@ public class FileService {
             contentStream.beginText();
             contentStream.setFont(titleFont, 18);
             contentStream.newLineAtOffset(50, pageHeight - 200); // x, y 좌표 (페이지에서 위치)
-//            contentStream.showText(board.getNewsTitle());
 
             float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
             List<String> wrappedLines = wrapText(board.getNewsTitle(), titleFont, 18, maxWidth);
@@ -82,11 +81,11 @@ public class FileService {
             contentStream.endText();
 
             // 내용 추가 (기본 글꼴, 크기 12)
+            float contentStartY = pageHeight - 200 - (wrappedLines.size() * 26) - 20;
             contentStream.beginText();
             contentStream.setFont(contentFont, 12);
-            contentStream.newLineAtOffset(50, pageHeight - 250); // x, y 좌표 (페이지에서 위치)
+            contentStream.newLineAtOffset(50, contentStartY);
 
-            //float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
             wrappedLines = wrapText(board.getLongSummary(), contentFont, 12, maxWidth);
 
             for (String line : wrappedLines) {
@@ -150,30 +149,28 @@ public class FileService {
     // 줄바꿈 계산 함수
     public List<String> wrapText(String text, PDFont font, int fontSize, float maxWidth) throws IOException {
         List<String> lines = new ArrayList<>();
-        StringBuilder currentLine = new StringBuilder();
-        float currentWidth = 0;
-
-        for (String word : text.split(" ")) {  // 단어 단위로 분리
-            float wordWidth = font.getStringWidth(word) / 1000 * fontSize;  // 단어 폭 계산
-
-            if (currentWidth + wordWidth > maxWidth) {  // 줄 길이 초과 시 줄바꿈
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder(word);
-                currentWidth = wordWidth;
-            } else {
-                if (currentLine.length() > 0) {
-                    currentLine.append(" ");
-                    currentWidth += font.getStringWidth(" ") / 1000 * fontSize;
+        for (String paragraph : text.split("\\n")) {
+            StringBuilder currentLine = new StringBuilder();
+            float currentWidth = 0;
+            for (String word : paragraph.split(" ")) {
+                float wordWidth = font.getStringWidth(word) / 1000 * fontSize;
+                if (currentWidth + wordWidth > maxWidth) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder(word);
+                    currentWidth = wordWidth;
+                } else {
+                    if (currentLine.length() > 0) {
+                        currentLine.append(" ");
+                        currentWidth += font.getStringWidth(" ") / 1000 * fontSize;
+                    }
+                    currentLine.append(word);
+                    currentWidth += wordWidth;
                 }
-                currentLine.append(word);
-                currentWidth += wordWidth;
+            }
+            if (currentLine.length() > 0) {
+                lines.add(currentLine.toString());
             }
         }
-
-        if (currentLine.length() > 0) {
-            lines.add(currentLine.toString());
-        }
-
         return lines;
     }
 
