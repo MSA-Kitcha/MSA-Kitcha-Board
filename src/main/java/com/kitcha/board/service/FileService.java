@@ -40,9 +40,9 @@ public class FileService {
         document.addPage(page);
 
         // 트루타입 폰트 로드
-        InputStream titleFontStream = getClass().getResourceAsStream("/fonts/HMKMRHD.ttf");
+        InputStream titleFontStream = getClass().getResourceAsStream("/fonts/NotoSansKR-ExtraBold.ttf");
         PDType0Font titleFont = PDType0Font.load(document, titleFontStream);
-        InputStream contentFontStream = getClass().getResourceAsStream("/fonts/NanumGothicCoding.ttf");
+        InputStream contentFontStream = getClass().getResourceAsStream("/fonts/NotoSansKR-Regular.ttf");
         PDType0Font contentCont = PDType0Font.load(document, contentFontStream);
 
         // 배너 이미지 로드
