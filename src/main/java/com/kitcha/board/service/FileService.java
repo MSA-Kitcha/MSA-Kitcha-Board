@@ -43,7 +43,7 @@ public class FileService {
         InputStream titleFontStream = getClass().getResourceAsStream("/fonts/NotoSansKR-ExtraBold.ttf");
         PDType0Font titleFont = PDType0Font.load(document, titleFontStream);
         InputStream contentFontStream = getClass().getResourceAsStream("/fonts/NotoSansKR-Regular.ttf");
-        PDType0Font contentCont = PDType0Font.load(document, contentFontStream);
+        PDType0Font contentFont = PDType0Font.load(document, contentFontStream);
 
         // 배너 이미지 로드
         InputStream inputStream = getClass().getResourceAsStream("/images/Background.png");
@@ -69,22 +69,25 @@ public class FileService {
             contentStream.beginText();
             contentStream.setFont(titleFont, 18);
             contentStream.newLineAtOffset(50, pageHeight - 200); // x, y 좌표 (페이지에서 위치)
-            contentStream.showText(board.getNewsTitle());
+//            contentStream.showText(board.getNewsTitle());
+
+            float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
+            List<String> wrappedLines = wrapText(board.getNewsTitle(), titleFont, 18, maxWidth);
+
+            for (String line : wrappedLines) {
+                contentStream.showText(line);
+                contentStream.newLineAtOffset(0, -26);
+            }
+
             contentStream.endText();
 
             // 내용 추가 (기본 글꼴, 크기 12)
             contentStream.beginText();
-            contentStream.setFont(contentCont, 12);
+            contentStream.setFont(contentFont, 12);
             contentStream.newLineAtOffset(50, pageHeight - 250); // x, y 좌표 (페이지에서 위치)
 
-//            for (String line : lines) {
-//                contentStream.showText(line);  // 한 줄 출력
-//                yPosition -= 15;               // Y 좌표 변경 (한 줄 아래로 이동)
-//                contentStream.newLineAtOffset(0, -15);
-//            }
-
-            float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
-            List<String> wrappedLines = wrapText(board.getLongSummary(), contentCont, 12, maxWidth);
+            //float maxWidth = pageWidth - 100; // 좌우 여백 고려한 최대 폭
+            wrappedLines = wrapText(board.getLongSummary(), contentFont, 12, maxWidth);
 
             for (String line : wrappedLines) {
                 contentStream.showText(line);
