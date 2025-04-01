@@ -44,12 +44,12 @@ public class BoardController {
     }
 
     // 2. 목록 조회
-    @GetMapping
-    public ResponseEntity<List<BoardList>> list(@RequestParam int page, @RequestParam int size) {
-        List<BoardList> results = boardService.list(page, size);
-
-        return ResponseEntity.ok().body(results);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<BoardList>> list(@RequestParam int page, @RequestParam int size) {
+//        List<BoardList> results = boardService.list(page, size);
+//
+//        return ResponseEntity.ok().body(results);
+//    }
 
     // 3. 상세 조회
     @GetMapping("/{boardId}")
