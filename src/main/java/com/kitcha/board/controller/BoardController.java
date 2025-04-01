@@ -30,18 +30,18 @@ public class BoardController {
     private FileService fileService;
 
     // 1. 게시글 작성
-    @PostMapping
-    public ResponseEntity<Object> create(
-            @RequestHeader("X-User-Id") String userId,
-            @RequestHeader("X-User-Nickname") String nickname,
-            @RequestBody BoardCreate boardCreate) throws IOException {
-
-        Board newBoard = boardService.create(Long.parseLong(userId), nickname, boardCreate);
-
-        return (newBoard != null) ?
-                ResponseEntity.ok().body(newBoard) :
-                ResponseEntity.badRequest().build();
-    }
+//    @PostMapping
+//    public ResponseEntity<Object> create(
+//            @RequestHeader("X-User-Id") String userId,
+//            @RequestHeader("X-User-Nickname") String nickname,
+//            @RequestBody BoardCreate boardCreate) throws IOException {
+//
+//        Board newBoard = boardService.create(Long.parseLong(userId), nickname, boardCreate);
+//
+//        return (newBoard != null) ?
+//                ResponseEntity.ok().body(newBoard) :
+//                ResponseEntity.badRequest().build();
+//    }
 
     // 2. 목록 조회
     @GetMapping
